@@ -1,7 +1,7 @@
 all: oss user
 
 clean:
-	-rm oss user
+	-rm oss user logFile
 
 dt:
 	gcc -o user user.c

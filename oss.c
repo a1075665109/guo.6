@@ -6,6 +6,7 @@
 #include <signal.h>
 #include <semaphore.h> 
 
+#define maxTimeNS 1000000000
 #define maxProcess 18
 int maxTime = 5;
 
@@ -13,6 +14,7 @@ int maxTime = 5;
 struct clock{
         unsigned int sec;
         unsigned int nano_sec;
+	int maxChild;
 	sem_t sem;
 };
 
@@ -37,6 +39,32 @@ struct pageTable* prm;
 char* outputFile;
 
 
+void printAllFrames(){
+	FILE *fp;
+        fp = fopen(outputFile,"a");
+	fprintf(fp,"\nCurrent memory layout at time %d.%d is:\n",clk->sec,clk->nano_sec);
+	fprintf(fp,"\t Occupied \t  RefByte \t DirtyBit\n");
+	int i = 0;
+	while (i < 256){
+		fprintf(fp,"Frame %d: \t%d\t\t%d\t\t%d\n",i,frame[i].occupied,frame[i].referenceByte,frame[i].dirtyBit);
+		i += 1;
+	}	
+	fprintf(fp,"\n");		
+	fclose(fp);
+}
+
+void printPT(){
+	FILE *fp;
+	fp = fopen(outputFile,"a");
+	int i =0;
+	while (i < 18){
+		
+		fprintf(fp,"pid: %d\n",prm[i].pid);
+		i += 1;
+	}	
+	fclose(fp);
+}
+
 void init_frames(){
 	int i = 0;
 	while(i < 256){
@@ -51,6 +79,7 @@ void init_frames(){
 void init_clock(){
 	clk -> nano_sec = 0;
 	clk -> sec = 0;
+	clk -> maxChild = 18;
 }
 
 void init_pageTable(){
@@ -118,7 +147,7 @@ int main(int argc, char*argv[]){
 		
 	int prmid;
         int prmsize = 18 * sizeof(prm);
-        prmid = shmget(0x1234,prmsize,0666|IPC_CREAT);
+        prmid = shmget(0x4234,prmsize,0666|IPC_CREAT);
         if(prmid == -1){
                 perror("Shared memory\n");
                 return 0;
@@ -132,7 +161,7 @@ int main(int argc, char*argv[]){
 	// setup clock shared memory
 	int clockid;
         int clocksize = sizeof(clk);
-        clockid = shmget(0x3234,clocksize,0666|IPC_CREAT);
+        clockid = shmget(0x5234,clocksize,0666|IPC_CREAT);
         if(clockid == -1){
                 perror("Shared memory\n");
                 return 0;
@@ -146,7 +175,7 @@ int main(int argc, char*argv[]){
 	// set up the frameTable in shared memory
 	int frameid;
         int framesize = 256 * sizeof(frame);
-        frameid = shmget(0x2234,framesize,0666|IPC_CREAT);
+        frameid = shmget(0x6234,framesize,0666|IPC_CREAT);
         if(frameid == -1){
                 perror("Shared memory\n");
                 return 0;
@@ -157,9 +186,66 @@ int main(int argc, char*argv[]){
                 return 0;
         }
 	
+	// initialize all the shared memory stuff	
 	init_frames();	
 	init_clock();
 	init_pageTable();
+	
+	// print all frames at its natural state;
+	printAllFrames();
+
+	int picked = 0;
+	unsigned int s;
+	unsigned int ns;
+	// infinite loop in OS
+	while(1){
+	 printPT();
+		// pick a random time to fork a process until 18 processes
+		if(picked == 0){
+                        s = clk->sec;
+                        ns = clk->nano_sec + rand()%(10000000000)+1;
+                        if(ns>= maxTimeNS){
+                                s = s+1;
+                                ns = ns-maxTimeNS;
+                        }
+                        picked = 1;
+                }
+
+		// increment the clock
+		clk->nano_sec = clk->nano_sec +25000;
+                if(clk->nano_sec >= maxTimeNS){
+                        clk->sec = clk->sec +1;
+                        clk->nano_sec =0;
+                }
+		if(clk->sec >= s && picked == 1){
+                        if(clk->nano_sec >= ns){
+                                picked = 0;
+                                if(clk->maxChild>0){
+                                        int i =0;
+					// finding a empty spot for child process
+                                        while(i<18){
+                                                if(prm[i].pid == -1){
+                                                        break;
+                                                }
+                                                i+=1;
+                                        }
+                                        clk->maxChild = clk->maxChild -1;
+                                        int child_pid = fork();
+                                      
+					// if in child then execute user else store the child process pid in table;
+					if(child_pid <=0){
+                                                execvp("./user",NULL);
+                                                exit(0);
+                                        }else{
+                                                prm[i].pid=child_pid;
+                                        }
+                                }
+                        }
+                }
+
+
+	}
+
 
 	return 0;
 }
