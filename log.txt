@@ -1,0 +1,5 @@
+commit 64a394c89912208b51fba2e12bcf54fe9053a339
+Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
+Date:   Thu Nov 21 11:50:41 2019 -0600
+
+    setting up all files
