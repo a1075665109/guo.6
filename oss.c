@@ -5,7 +5,7 @@
 #include <unistd.h>
 #include <signal.h>
 #include <semaphore.h> 
-
+#include <pthread.h>
 #define maxTimeNS 1000000000
 #define maxProcess 18
 int maxTime = 5;
@@ -46,8 +46,11 @@ void printAllFrames(){
 	fprintf(fp,"\t Occupied \t  RefByte \t DirtyBit\n");
 	int i = 0;
 	while (i < 256){
-		fprintf(fp,"Frame %d: \t%d\t\t%d\t\t%d\n",i,frame[i].occupied,frame[i].referenceByte,frame[i].dirtyBit);
-		i += 1;
+		if(frame[i].occupied == 0){
+		fprintf(fp,"Frame %d: \tYes\t\t%d\t\t%d\n",i,frame[i].occupied,frame[i].referenceByte,frame[i].dirtyBit);
+		}else{
+		fprintf(fp,"Frame %d: \tNo\t\t%d\t\t%d\n",i,frame[i].occupied,frame[i].referenceByte,frame[i].dirtyBit);
+		}i += 1;
 	}	
 	fprintf(fp,"\n");		
 	fclose(fp);
@@ -193,13 +196,11 @@ int main(int argc, char*argv[]){
 	
 	// print all frames at its natural state;
 	printAllFrames();
-
 	int picked = 0;
 	unsigned int s;
 	unsigned int ns;
 	// infinite loop in OS
 	while(1){
-	 printPT();
 		// pick a random time to fork a process until 18 processes
 		if(picked == 0){
                         s = clk->sec;
@@ -210,7 +211,7 @@ int main(int argc, char*argv[]){
                         }
                         picked = 1;
                 }
-
+		
 		// increment the clock
 		clk->nano_sec = clk->nano_sec +25000;
                 if(clk->nano_sec >= maxTimeNS){
@@ -242,7 +243,6 @@ int main(int argc, char*argv[]){
                                 }
                         }
                 }
-
 
 	}
 

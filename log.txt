@@ -1,3 +1,9 @@
+commit 7fe115bcddfd9d6b0053b1c0732acfc3cc7a2eef
+Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
+Date:   Wed Nov 27 19:24:23 2019 -0600
+
+    generating child process, all shared memory works
+
 commit 6a6b710370799f4fe7c5f9a714dde155576b5dd6
 Author: Yanchen Guo <guo@hoare7.cs.umsl.edu>
 Date:   Wed Nov 27 18:37:43 2019 -0600

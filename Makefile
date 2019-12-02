@@ -4,5 +4,5 @@ clean:
 	-rm oss user logFile
 
 dt:
-	gcc -o user user.c
-	gcc -o oss oss.c	
+	gcc -o user user.c -lpthread
+	gcc -o oss oss.c -lpthread	
