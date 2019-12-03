@@ -15,7 +15,7 @@ struct clock{
         unsigned int sec;
         unsigned int nano_sec;
 	int maxChild;
-	sem_t sem;
+	int FIFO;
 };
 
 // frame table with referecebyte,page number, dirty bit, pid, and indication of occupied.
@@ -47,9 +47,9 @@ void printAllFrames(){
 	int i = 0;
 	while (i < 256){
 		if(frame[i].occupied == 0){
-		fprintf(fp,"Frame %d: \tYes\t\t%d\t\t%d\n",i,frame[i].occupied,frame[i].referenceByte,frame[i].dirtyBit);
-		}else{
 		fprintf(fp,"Frame %d: \tNo\t\t%d\t\t%d\n",i,frame[i].occupied,frame[i].referenceByte,frame[i].dirtyBit);
+		}else{
+		fprintf(fp,"Frame %d: \tYes\t\t%d\t\t%d\n",i,frame[i].occupied,frame[i].referenceByte,frame[i].dirtyBit);
 		}i += 1;
 	}	
 	fprintf(fp,"\n");		
@@ -83,7 +83,9 @@ void init_clock(){
 	clk -> nano_sec = 0;
 	clk -> sec = 0;
 	clk -> maxChild = 18;
+	clk -> FIFO = 0;
 }
+
 
 void init_pageTable(){
 	int i = 0;
@@ -108,7 +110,7 @@ void alarmHandler(int sig){
         
 	int i=0;
         while(i <18){
-                if(prm[i].pid>0){
+                if(prm[i].pid>-1){
                         kill(prm[i].pid,SIGTERM);
                 }
                 i=i+1;

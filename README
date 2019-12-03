@@ -1,0 +1,39 @@
+Yanchen Guo
+CS 4760
+Project 6
+
+For this project, compile it by first enter the command "make"
+It then creates an executable called "oss" and another called "user".
+Running the project by calling "./oss".
+It could also be ran with these command line arguments "-h -t".
+
+-h: displays all the avaliable command line arguments for this project then runs the program.
+-t: signals the maximum allowed run time for this program, after the allowed time all processes will terminate.
+
+
+
+explanation on what could be the result of running the program:
+
+	The program oss should initiate the frame table and child process pages in the shared memory
+
+	The full frame table was never used up to its limitation because I've only had at max 2 child processes running on hoare.
+
+	Child process ends after 10000 memory references but it never reaches that high
+	
+	The LRU function is used to find the position of the first occurance of the least referenced frame
+	FIFO could be done by an regular integer, adding 1 everytime a page is swapped in, loop back to 0 once it has gone through
+	all 256 frames.	
+
+        If no child process could be created due to fork() on hoare, then the only output is a blank frame table with 256 frames
+
+
+In this program there are a total of 256 frames in the frame table
+There is also 18 pageTable for the maximum of 18 child process, each table contains 32 pages;
+
+the default output file is logFile, default maximum run time is 5 seconds.
+
+Version control through github, all the logs could be found under log.txt within the directory.
+
+make clean command will remove all the executable and the default output file.
+
+All results generated could be viewed within the logFile
